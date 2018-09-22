@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Tick Tock</string>
+    <string name="hours">0</string>
+    <string name="minutes">0</string>
+    <string name="seconds">0</string>
+    <string name="milliSeconds">0</string>
+    <string name="startButton">start</string>
+    <string name="stopButton">stop</string>
+    <string name="lapButton">lap</string>
+
+</resources>
