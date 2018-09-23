@@ -1,90 +1,160 @@
 package com.example.android.ticktock;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
+
+import java.nio.file.FileAlreadyExistsException;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    private long startTime = 0;
     private boolean running = false;
-    private long currentTime = 0;
-    private Button btnStart;
+    private TextView time_counter;
+    //    private EditText mEditText;
+    private Button btnStart, btnLap, btnStop, btnReset;
+//    private ScrollView mScrollView;
+
+    private Chronometer mChronometer;
+    private Context mContext;
+    private Thread mThreadChrono;
+
+    private int mLaps = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mContext = this;
+
+        time_counter = (TextView) findViewById(R.id.timer_display);
+
         btnStart = (Button) findViewById(R.id.start_btn);
+        btnStop = (Button) findViewById(R.id.stop_btn);
+        btnLap = (Button) findViewById(R.id.lap_btn);
+//        mEditText = (EditText) findViewById(R.id.lap_text_view);
+        btnReset = (Button) findViewById(R.id.reset_btn);
+//        mScrollView = (ScrollView) findViewById(R.id.lap_scroll_view);
+
+//        mEditText.setEnabled(false);
+
+        btnPressState(true, false, false, false);
+
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                btnStart.setText("Stop");
-                btnStart.setAllCaps(true);
-                btnStart.setTextColor(Color.parseColor("#e62739"));
-                btnStart.setBackgroundColor(Color.parseColor("#cc474b"));
+                //button start has been pressed
+
+                btnPressState(false, true, true, false);
+
+                if (mChronometer == null) {
+                    mChronometer = new Chronometer(mContext);
+                    mThreadChrono = new Thread(mChronometer);
+                    mThreadChrono.start();
+                    mChronometer.start();
+
+                    mLaps = 1;
+
+//                    mEditText.setText("");
+                }
+            }
+        });
+
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //button stop has been pressed
+
+                btnPressState(true, false, false, true);
+
+                if (mChronometer != null) {
+                    mChronometer.stop();
+                    mThreadChrono.interrupt();
+                    mThreadChrono = null;
+                    mChronometer = null;
+                }
+            }
+        });
+
+        btnLap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (mChronometer == null) {
+                    return;
+                }
+
+//                mEditText.append("LAP " + String.valueOf(mLaps) + " " + String.valueOf(time_counter.getText()) + "\n");
+
+                mLaps++;
+
+//                mScrollView.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mScrollView.smoothScrollTo(0, mEditText.getBottom());
+//                    }
+//                });
             }
         });
     }
 
-
-    private void updateMilliSeconds(long number) {
-        TextView milliSecondsTextView = (TextView) findViewById(R.id.milliSeconds);
-        milliSecondsTextView.setText("" + number);
+    public void updateTimerText(final String time) {
+        runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              time_counter.setText(time);
+                          }
+                      }
+        );
     }
 
-
-    public void stop() {
-        this.running = false;
-    }
-
-    public void pause() {
-        this.running = false;
-        currentTime = System.currentTimeMillis() - startTime;
-    }
-
-    public void resume() {
-        this.running = true;
-        this.startTime = System.currentTimeMillis() - currentTime;
-    }
-
-    //elaspsed time in milliseconds
-    public long getElapsedTimeMiliSecond() {
-        long elapsed = 0;
-        if (running) {
-            elapsed = ((System.currentTimeMillis() - startTime) / 100) % 1000;
+    public void btnState() {
+        if (!btnStart.isEnabled()) {
+            btnStart.setTextColor(Color.parseColor("#A9A9A9"));
+            btnStart.setBackgroundColor(Color.parseColor("#D3D3D3"));
         }
-        return elapsed;
+        else {
+            btnStart.setTextColor(Color.parseColor("#39ff14"));
+            btnStart.setBackgroundColor(Color.parseColor("#65a04e"));
+        }
+        if (!btnStop.isEnabled()) {
+            btnStop.setTextColor(Color.parseColor("#A9A9A9"));
+            btnStop.setBackgroundColor(Color.parseColor("#D3D3D3"));
+        }
+        else {
+            btnStop.setTextColor(Color.parseColor("#ff0000"));
+            btnStop.setBackgroundColor(Color.parseColor("#F08080"));
+        }
+        if (!btnLap.isEnabled()) {
+            btnLap.setTextColor(Color.parseColor("#A9A9A9"));
+            btnLap.setBackgroundColor(Color.parseColor("#D3D3D3"));
+        }
+        else {
+            btnLap.setTextColor(Color.parseColor("#ffffff"));
+            btnLap.setBackgroundColor(Color.parseColor("#696969"));
+        }
+        if (!btnReset.isEnabled()) {
+            btnReset.setTextColor(Color.parseColor("#A9A9A9"));
+            btnReset.setBackgroundColor(Color.parseColor("#D3D3D3"));
+        }
+        else {
+            btnReset.setTextColor(Color.parseColor("#ffffff"));
+            btnReset.setBackgroundColor(Color.parseColor("#696969"));
+        }
     }
 
-    //elaspsed time in seconds
-    public long getElapsedTimeSeconds() {
-        long elapsed = 0;
-        if (running) {
-            elapsed = ((System.currentTimeMillis() - startTime) / 1000) % 60;
-        }
-        return elapsed;
-    }
-
-    //elaspsed time in minutes
-    public long getElapsedTimeMinuntes() {
-        long elapsed = 0;
-        if (running) {
-            elapsed = (((System.currentTimeMillis() - startTime) / 1000) / 60) % 60;
-        }
-        return elapsed;
-    }
-
-    //elaspsed time in hours
-    public long getElapsedTimeHour() {
-        long elapsed = 0;
-        if (running) {
-            elapsed = ((((System.currentTimeMillis() - startTime) / 1000) / 60) / 60);
-        }
-        return elapsed;
+    public void btnPressState(boolean start, boolean stop, boolean lap, boolean reset) {
+        btnStart.setEnabled(start);
+        btnStop.setEnabled(stop);
+        btnLap.setEnabled(lap);
+        btnReset.setEnabled(reset);
+        btnState();
     }
 }
