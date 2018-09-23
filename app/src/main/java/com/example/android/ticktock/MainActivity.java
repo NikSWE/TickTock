@@ -2,25 +2,22 @@ package com.example.android.ticktock;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
-
-import java.nio.file.FileAlreadyExistsException;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private boolean running = false;
-    private TextView time_counter;
-    //    private EditText mEditText;
+    private TextView time_counter, mTextView;
     private Button btnStart, btnLap, btnStop, btnReset;
-//    private ScrollView mScrollView;
-
+    private ScrollView mScrollView;
     private Chronometer mChronometer;
     private Context mContext;
     private Thread mThreadChrono;
@@ -39,11 +36,9 @@ public class MainActivity extends AppCompatActivity {
         btnStart = (Button) findViewById(R.id.start_btn);
         btnStop = (Button) findViewById(R.id.stop_btn);
         btnLap = (Button) findViewById(R.id.lap_btn);
-//        mEditText = (EditText) findViewById(R.id.lap_text_view);
+        mTextView = (TextView) findViewById(R.id.lap_text_view);
         btnReset = (Button) findViewById(R.id.reset_btn);
-//        mScrollView = (ScrollView) findViewById(R.id.lap_scroll_view);
-
-//        mEditText.setEnabled(false);
+        mScrollView = (ScrollView) findViewById(R.id.lap_scroll_view);
 
         btnPressState(true, false, false, false);
 
@@ -60,9 +55,10 @@ public class MainActivity extends AppCompatActivity {
                     mThreadChrono.start();
                     mChronometer.start();
 
-                    mLaps = 1;
-
-//                    mEditText.setText("");
+                } else {
+                    mThreadChrono = new Thread(mChronometer);
+                    mThreadChrono.start();
+                    mChronometer.start();
                 }
             }
         });
@@ -74,35 +70,48 @@ public class MainActivity extends AppCompatActivity {
 
                 btnPressState(true, false, false, true);
 
-                if (mChronometer != null) {
-                    mChronometer.stop();
-                    mThreadChrono.interrupt();
-                    mThreadChrono = null;
-                    mChronometer = null;
-                }
+                mChronometer.pause();
+                mThreadChrono.interrupt();
+                mThreadChrono = null;
             }
         });
 
         btnLap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //button lap has been pressed
 
                 if (mChronometer == null) {
                     return;
                 }
 
-//                mEditText.append("LAP " + String.valueOf(mLaps) + " " + String.valueOf(time_counter.getText()) + "\n");
+                mTextView.append("Lap " + String.valueOf(mLaps) + "\t\t\t\t" + String.valueOf(time_counter.getText()) + "\n");
 
                 mLaps++;
 
-//                mScrollView.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        mScrollView.smoothScrollTo(0, mEditText.getBottom());
-//                    }
-//                });
+                mScrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mScrollView.smoothScrollTo(0, mTextView.getBottom());
+                    }
+                });
             }
         });
+
+        btnReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTextView.setText("");
+                time_counter.setText("00:00:00.000");
+
+                btnPressState(true, false, false, false);
+
+                mChronometer = null;
+
+                mLaps = 1;
+            }
+        });
+
     }
 
     public void updateTimerText(final String time) {
@@ -119,32 +128,28 @@ public class MainActivity extends AppCompatActivity {
         if (!btnStart.isEnabled()) {
             btnStart.setTextColor(Color.parseColor("#A9A9A9"));
             btnStart.setBackgroundColor(Color.parseColor("#D3D3D3"));
-        }
-        else {
+        } else {
             btnStart.setTextColor(Color.parseColor("#39ff14"));
             btnStart.setBackgroundColor(Color.parseColor("#65a04e"));
         }
         if (!btnStop.isEnabled()) {
             btnStop.setTextColor(Color.parseColor("#A9A9A9"));
             btnStop.setBackgroundColor(Color.parseColor("#D3D3D3"));
-        }
-        else {
+        } else {
             btnStop.setTextColor(Color.parseColor("#ff0000"));
             btnStop.setBackgroundColor(Color.parseColor("#F08080"));
         }
         if (!btnLap.isEnabled()) {
             btnLap.setTextColor(Color.parseColor("#A9A9A9"));
             btnLap.setBackgroundColor(Color.parseColor("#D3D3D3"));
-        }
-        else {
+        } else {
             btnLap.setTextColor(Color.parseColor("#ffffff"));
             btnLap.setBackgroundColor(Color.parseColor("#696969"));
         }
         if (!btnReset.isEnabled()) {
             btnReset.setTextColor(Color.parseColor("#A9A9A9"));
             btnReset.setBackgroundColor(Color.parseColor("#D3D3D3"));
-        }
-        else {
+        } else {
             btnReset.setTextColor(Color.parseColor("#ffffff"));
             btnReset.setBackgroundColor(Color.parseColor("#696969"));
         }

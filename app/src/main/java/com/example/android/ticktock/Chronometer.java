@@ -9,8 +9,8 @@ public class Chronometer implements Runnable {
     private static final long MILLIS_TO_HOURS = 3_600_000;
 
     private Context mContext;
+    private long lastPause = 0;
     private long mStartTime;
-
     private boolean isRunning;
 
     public Chronometer(Context mContext) {
@@ -26,10 +26,15 @@ public class Chronometer implements Runnable {
         isRunning = false;
     }
 
+    public void pause() {
+        stop();
+        lastPause += System.currentTimeMillis() - mStartTime;
+    }
+
     @Override
     public void run() {
         while(isRunning) {
-            long since = System.currentTimeMillis() - mStartTime;
+            long since = (System.currentTimeMillis() - mStartTime ) + lastPause;
 
             int milliSeconds = (int) since % 1000;
             int seconds = (int) ((since / MILLIS_TO_SECONDS) % 60);

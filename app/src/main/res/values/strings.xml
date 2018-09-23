@@ -2,6 +2,7 @@
     <string name="app_name">Tick Tock</string>
     <string name="time">00:00:00.000</string>
     <string name="startButton">start</string>
+    <string name="laps">laps  Table</string>
     <string name="stopButton">stop</string>
     <string name="lapButton">lap</string>
     <string name="resetButton">reset</string>
