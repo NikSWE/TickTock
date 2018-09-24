@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
         btnReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //button reset has been pressed
                 mTextView.setText("");
                 time_counter.setText("00:00:00.000");
 
